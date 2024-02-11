@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from functools import update_wrapper
-
+from functools import  wraps
 
 def disable():
     '''
@@ -12,39 +11,61 @@ def disable():
     >>> memo = disable
 
     '''
-    return
+    ...
 
 
-def decorator():
+def decorator(func):
     '''
     Decorate a decorator so that it inherits the docstrings
     and stuff from the function it's decorating.
     '''
-    return
+    @wraps(func)
+    def wrapper(*args,  **kwargs):
+        print(func.__name__)
+        return func(*args,  **kwargs)
+    return wrapper
 
 
-def countcalls():
+def countcalls(func):
     '''Decorator that counts calls made to the function decorated.'''
-    return
+    @wraps(func)
+    def wrapper(*args,  **kwargs):
+        wrapper.count += 1
+        print(f'func called: {wrapper.count}')
+        return func(*args, **kwargs)
+    wrapper.count =0    
+    
+    return wrapper
 
 
-def memo():
+def memo(func):
     '''
     Memoize a function so that it caches all return values for
     faster future lookups.
     '''
-    return
+    cache = {}
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        key = str(args) + str(kwargs)
+        if key not in cache:
+            cache[key] = func(*args, **kwargs)
+            print(cache, key, sep=' | ' )
+        return cache[key]    
+    return wrapper
 
 
-def n_ary():
+def n_ary(func):
     '''
     Given binary function f(x, y), return an n_ary function such
     that f(x, y, z) = f(x, f(y,z)), etc. Also allow f(x) = x.
     '''
-    return
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        ...
+    return wrapper
 
 
-def trace():
+def trace(func):
     '''Trace calls made to function decorated.
 
     @trace("____")
@@ -64,25 +85,28 @@ def trace():
      <-- fib(3) == 3
 
     '''
-    return
+    @wraps(func)
+    def wraper(*args, **kwargs):
+        ...
+    return wraper
 
 
 @memo
 @countcalls
-@n_ary
+#@n_ary
 def foo(a, b):
     return a + b
 
 
 @countcalls
 @memo
-@n_ary
+#@n_ary
 def bar(a, b):
     return a * b
 
 
 @countcalls
-@trace("####")
+#@trace("####")
 @memo
 def fib(n):
     """Some doc"""
@@ -90,19 +114,19 @@ def fib(n):
 
 
 def main():
-    print foo(4, 3)
-    print foo(4, 3, 2)
-    print foo(4, 3)
-    print "foo was called", foo.calls, "times"
+    print (foo(4, 3))
+#    print (foo(4, 3, 2))
+    print (foo(4, 3))
+    print ("foo was called", foo.count, "times")
 
-    print bar(4, 3)
-    print bar(4, 3, 2)
-    print bar(4, 3, 2, 1)
-    print "bar was called", bar.calls, "times"
+    print (bar(4, 3))
+#    print (bar(4, 3, 2))
+#    print (bar(4, 3, 2, 1))
+    print ("bar was called", bar.count, "times")
 
-    print fib.__doc__
-    fib(3)
-    print fib.calls, 'calls made'
+    print (fib.__doc__)
+    fib(10)
+    print (fib.count, 'calls made')
 
 
 if __name__ == '__main__':
